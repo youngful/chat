@@ -13,6 +13,7 @@
 		"@socket.io/admin-ui": "^0.5.1",
 		"@supabase/supabase-js": "^2.49.4",
 		"bcrypt": "^6.0.0",
+		"lucide-react": "^0.511.0",
 		"next": "15.3.2",
 		"react": "^19.0.0",
 		"react-dom": "^19.0.0",

@@ -16,7 +16,7 @@ function useMessages() {
 		}
 
 		const loadedMessages = data.map(msg => ({
-			sender: msg.users?.userName || 'Unknown',
+			sender: msg.users?.[0]?.userName || 'Unknown',
 			message: msg.content,
 			createdAt: msg.created_at,
 		}))
@@ -25,72 +25,79 @@ function useMessages() {
 	}
 
 	const saveMessage = async (
-		content: string | File,
-		author: string,
-		chatId: string,
-		type: 'text' | 'file' | 'link' | 'photo' = 'text'
-	) => {
-		try {
-			let filePath = ''
-			let messageContent = ''
+	content: string | File,
+	author: string,
+	chatId: string,
+	type: 'text' | 'file' = 'text'
+): Promise<{ success: boolean; path?: string } | false> => {
+	try {
+		let filePath = ''
+		let messageContent = ''
 
-			if (type === 'file' || type === 'photo') {
-				if (!(content instanceof File)) {
-					console.error('Content must be a File for type file/photo')
-					return
-				}
+		if (type === 'file') {
+			console.log('Uploading file:', content)
 
-				const folder = type === 'photo' ? 'photo' : 'files'
-				const timestamp = Date.now()
-				const path = `${author}/${timestamp}_${content.name}`
-
-				const { data, error: uploadError } = await supabase.storage
-					.from(folder)
-					.upload(path, content, {
-						contentType: content.type,
-						upsert: false,
-					})
-
-				if (uploadError) {
-					console.error('Upload error:', uploadError)
-					return
-				}
-
-				filePath = data.path
-				messageContent = filePath
+			if (!(content instanceof File)) {
+				console.error('Content must be a File for type file')
+				return false
 			}
 
-			if (type === 'text' || type === 'link') {
-				if (typeof content !== 'string') {
-					console.error('Content must be a string for type text/link')
-					return
-				}
-				messageContent = content
+			const folder = 'chat-files'
+			const timestamp = Date.now()
+			const path = `${author}/${timestamp}_${content.name}`
+
+			const { data, error: uploadError } = await supabase.storage
+				.from(folder)
+				.upload(path, content, {
+					contentType: content.type,
+					upsert: false,
+				})
+
+			if (uploadError || !data) {
+				console.error('Upload error:', uploadError)
+				return false
 			}
 
-			const { data: messageData, error: messageError } = await supabase
-				.from('messages')
-				.insert([
-					{
-						content: messageContent,
-						author,
-						type,
-						chat_id: chatId,
-					},
-				])
+			filePath = data.path
+			messageContent = filePath
+		}
 
-			if (messageError) {
-				console.error('Error saving message:', messageError)
-				return
+		if (type === 'text') {
+			if (typeof content !== 'string') {
+				console.error('Content must be a string for type text')
+				return false
 			}
+			messageContent = content
+		}
 
-			console.log('Message saved:', messageData)
-			return true
-		} catch (error) {
-			console.error('Unexpected error:', error)
+		const { data: messageData, error: messageError } = await supabase
+			.from('messages')
+			.insert([
+				{
+					content: messageContent,
+					author,
+					type,
+					chat_id: chatId,
+				},
+			])
+
+		if (messageError) {
+			console.error('Error saving message:', messageError)
 			return false
 		}
+
+		console.log('Message saved:', messageData)
+
+		return {
+			success: true,
+			path: type === 'file' ? filePath : undefined,
+		}
+	} catch (error) {
+		console.error('Unexpected error:', error)
+		return false
 	}
+}
+
 
 	return { saveMessage, getMessages }
 }

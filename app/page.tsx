@@ -10,7 +10,7 @@ import { useUserChats } from '@/hooks/useUserChats'
 
 export default function Home() {
 	const { userId, userName, userChatsIds } = useUserSession()
-	const availableChats = useUserChats(userChatsIds)	
+	const availableChats = useUserChats(userChatsIds)
 
 	const [activeChat, setActiveChat] = useState<{
 		id: string
@@ -28,7 +28,7 @@ export default function Home() {
 	}
 
 	return (
-		<div className='flex w-full'>
+		<div className='flex w-full max-h-screen'>
 			<div className='w-[200px]'>
 				<Sidebar
 					chats={availableChats}
@@ -66,10 +66,9 @@ export default function Home() {
 				<div className='p-[24px_40px]'>
 					{activeChat && (
 						<ChatForm
-							chatId={activeChat.id}
 							author={userId}
-							onSendMessage={({ author, text, createdAt }) => {
-								sendMessage(text, author, createdAt)
+							onSendMessage={({ author, text, createdAt, file }) => {
+								sendMessage(file || text, author, createdAt, file)
 							}}
 						/>
 					)}
