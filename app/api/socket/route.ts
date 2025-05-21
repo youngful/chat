@@ -1,5 +1,5 @@
 import { Server as SocketIOServer } from 'socket.io'
-import { NextRequest, NextResponse } from 'next/server'
+import { NextResponse } from 'next/server'
 import { instrument } from '@socket.io/admin-ui'
 
 export const config = {
@@ -10,7 +10,7 @@ export const config = {
 
 let io: SocketIOServer | undefined
 
-export async function GET(req: NextRequest) {
+export async function GET() {
   if (!io) {
     const { Server } = await import('socket.io')
 
