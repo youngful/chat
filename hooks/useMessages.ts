@@ -16,7 +16,7 @@ function useMessages() {
 		}
 
 		const loadedMessages = data.map(msg => ({
-			sender: msg.users?.[0]?.userName || 'Unknown',
+			sender: Array.isArray(msg.users) && msg.users.length > 0 ? msg.users[0].userName : 'Unknown',
 			message: msg.content,
 			createdAt: msg.created_at,
 		}))
