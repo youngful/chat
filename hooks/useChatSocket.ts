@@ -21,6 +21,7 @@ export function useChatSocket(roomId: string, userName: string) {
 		setMessages(loadedMessages)
 	}
 
+
 	useEffect(() => {
 		if (!roomId) return
 
